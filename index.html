@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird - Rahul Gandhi Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.7);
+            border: 3px solid #FF6B6B;
+            margin: 20px 0;
+        }
+
+        h1 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #FF0000;
+            color: #FF6B6B;
+        }
+
+        h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(to bottom, #FF6B6B, #C44569);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            border: 2px solid #FFD700;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #FF8E53, #FF416C);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #FF0000;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(to bottom, #4ECDC4, #556270);
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .social-btn.instagram {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+
+        .social-btn.youtube {
+            background: linear-gradient(45deg, #FF0000, #CC0000);
+        }
+
+        .game-container {
+            position: relative;
+            width: 360px;
+            height: 540px;
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.7);
+            margin: 20px auto;
+        }
+
+        #game-canvas {
+            background: linear-gradient(to bottom, #4ECDC4, #556270);
+            display: block;
+        }
+
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000;
+            z-index: 10;
+        }
+
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            z-index: 20;
+        }
+
+        #game-over-screen {
+            display: none;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            max-width: 90%;
+            line-height: 1.6;
+            color: #FFD700;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #FFD700;
+        }
+        
+        .cute-bird {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            position: relative;
+            filter: drop-shadow(0 0 15px #FFA500);
+        }
+        
+        .burnt-bird {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            position: relative;
+            filter: grayscale(1) brightness(0.3);
+        }
+        
+        .tear {
+            position: absolute;
+            width: 10px;
+            height: 18px;
+            background: #3498db;
+            border-radius: 50%;
+        }
+        
+        .tear-left {
+            left: 30px;
+            top: 65px;
+            animation: tearDrop 2s infinite;
+        }
+        
+        .tear-right {
+            right: 30px;
+            top: 65px;
+            animation: tearDrop 2s infinite 0.5s;
+        }
+        
+        @keyframes tearDrop {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(40px); opacity: 0; }
+        }
+        
+        #final-score {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #FFD700;
+            text-shadow: 0 0 10px #FF0000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        
+        .difficulty-info {
+            background: rgba(255, 107, 107, 0.3);
+            padding: 12px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 2px solid #FF6B6B;
+            color: #FFD700;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        #sound-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 107, 107, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 100;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+        }
+
+        .sound-test {
+            background: linear-gradient(to bottom, #FF8E53, #FF416C) !important;
+            margin: 10px !important;
+            padding: 10px 15px !important;
+            font-size: 14px !important;
+        }
+
+        .developer-credit {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #FFD700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .developer-credit span {
+            color: #FF6B6B;
+            font-weight: bold;
+            text-shadow: 0 0 5px #FF0000;
+        }
+
+        .hearts {
+            font-size: 30px;
+            margin-bottom: 15px;
+            animation: pulse 1.5s infinite;
+            filter: drop-shadow(0 0 5px #FF0000);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .fire-warning {
+            color: #FF4444;
+            font-weight: bold;
+            text-shadow: 0 0 10px #FF0000;
+            animation: glow 1s infinite alternate;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #FF0000; }
+            to { text-shadow: 0 0 20px #FF0000, 0 0 30px #FF0000; }
+        }
+
+        .inferno-title {
+            background: linear-gradient(45deg, #FF0000, #FFA500, #FFFF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            font-size: 36px;
+        }
+        
+        .custom-bird-image {
+            width: 50px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px #FF0000;
+        }
+        
+        .burnt-bird-image {
+            width: 50px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #333;
+            filter: grayscale(1) brightness(0.3);
+            box-shadow: 0 0 15px #000;
+        }
+        
+        .rahul-pipe-image {
+            width: 80px;
+            height: auto;
+            border-radius: 10px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px #FF0000;
+        }
+        
+        .congress-logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+            border-radius: 50%;
+            border: 3px solid #FF0000;
+            background: white;
+            padding: 5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #FFD700;
+        }
+
+        .feature-list li {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .developer-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .developer-photo {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 20px #FF0000;
+            object-fit: cover;
+        }
+
+        .thank-you {
+            font-size: 24px;
+            color: #FFD700;
+            margin: 30px 0;
+            text-shadow: 0 0 10px #FF0000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1: Welcome Page -->
+    <div id="page1" class="page active">
+        <div class="container">
+            <div class="hearts">✈️</div>
+            <h1 class="inferno-title">फ्लैपी बर्ड - राहुल गांधी एडिशन</h1>
+            
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Indian_National_Congress_hand_logo.svg/1200px-Indian_National_Congress_hand_logo.svg.png" alt="Congress Logo" class="congress-logo">
+            
+            <div class="cute-bird">
+                <img src="https://i.ibb.co/dJJp52wv/IMG-20251103-061841-removebg-preview.png" alt="Custom Bird" class="custom-bird-image" style="width: 100px; height: 100px;">
+            </div>
+            
+            <h2>स्वागत है!</h2>
+            <p>इस खास राजनीतिक संस्करण में, आपको राहुल गांधी के पाइप्स से बचते हुए अपनी उड़ान जारी रखनी है।</p>
+            
+            <div class="difficulty-info">
+                ★ राजनीतिक मोड ★<br>
+                <small>राहुल गांधी के पाइप्स, न्यू इंडिया का आसमान</small>
+            </div>
+
+            <div class="fire-warning">⚠️ राहुल गांधी के पाइप्स से सावधान! ⚠️</div>
+            
+            <button id="start-game-btn">खेल शुरू करें</button>
+            
+            <div class="nav-buttons">
+                <button id="to-developer-btn">डेवलपर के बारे में</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: Game Page -->
+    <div id="page2" class="page">
+        <div class="container">
+            <h1 class="inferno-title">फ्लैपी बर्ड - राहुल गांधी एडिशन</h1>
+            
+            <div class="game-container">
+                <button id="sound-toggle">🔊</button>
+                <canvas id="game-canvas" width="360" height="540"></canvas>
+                <div id="score-display">0</div>
+                
+                <div id="start-screen">
+                    <div class="hearts">✈️</div>
+                    <h1 class="inferno-title">फ्लैपी बर्ड - राहुल गांधी एडिशन</h1>
+                    
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Indian_National_Congress_hand_logo.svg/1200px-Indian_National_Congress_hand_logo.svg.png" alt="Congress Logo" class="congress-logo">
+                    
+                    <div class="cute-bird">
+                        <img src="https://i.ibb.co/dJJp52wv/IMG-20251103-061841-removebg-preview.png" alt="Custom Bird" class="custom-bird-image" style="width: 100px; height: 100px;">
+                    </div>
+                    
+                    <div class="difficulty-info">
+                        ★ राजनीतिक मोड ★<br>
+                        <small>राहुल गांधी के पाइप्स, न्यू इंडिया का आसमान</small>
+                    </div>
+
+                    <div class="fire-warning">⚠️ राहुल गांधी के पाइप्स से सावधान! ⚠️</div>
+
+                    <button class="sound-test" onclick="testAllSounds()">Sound Test</button>
+                    
+                    <button id="start-button">खेल शुरू करें</button>
+                    <div class="instructions">
+                        क्लिक करें या स्पेस बार दबाएं ताकि बर्ड उड़ सके<br>
+                        राहुल गांधी के पाइप्स से बचें या गेम ओवर हो जाएगा!
+                    </div>
+                </div>
+                
+                <div id="game-over-screen">
+                    <h1 class="inferno-title">गेम ओवर! 🇮🇳</h1>
+                    <div class="burnt-bird">
+                        <img src="https://i.ibb.co/dJJp52wv/IMG-20251103-061841-removebg-preview.png" alt="Burnt Bird" class="burnt-bird-image" style="width: 100px; height: 100px;">
+                        <div class="tear tear-left"></div>
+                        <div class="tear tear-right"></div>
+                    </div>
+                    <div id="final-score">आपका स्कोर: 0</div>
+                    <button id="restart-button">फिर से कोशिश करें</button>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button id="back-to-welcome-btn">वापस जाएं</button>
+                <button id="to-developer-from-game-btn">डेवलपर के बारे में</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 3: Developer Page -->
+    <div id="page3" class="page">
+        <div class="container">
+            <h1 class="inferno-title">डेवलपर के बारे में</h1>
+            
+            <div class="developer-info">
+                <a href="https://ibb.co/XZS9bGtT"><img src="https://i.ibb.co/Z6W3VbxC/IMG-20251017-223653.jpg" alt="IMG-20251017-223653" class="developer-photo" border="0"></a>
+                <h2>Sujeet Sahni</h2>
+                <p>इस गेम के डेवलपर और क्रिएटर</p>
+            </div>
+            
+            <div class="feature-list">
+                <h3>गेम की विशेषताएं:</h3>
+                <ul>
+                    <li>राहुल गांधी थीम्ड पाइप्स</li>
+                    <li>कस्टम बर्ड इमेज</li>
+                    <li>रियलिस्टिक फिजिक्स</li>
+                    <li>साउंड इफेक्ट्स</li>
+                    <li>स्कोर ट्रैकिंग</li>
+                    <li>रिस्पॉन्सिव डिजाइन</li>
+                </ul>
+            </div>
+            
+            <div class="social-links">
+                <a href="https://www.instagram.com/sujeet__sahni__143?igsh=MTVsc2E5cHk2bnpzbw==" target="_blank" class="social-btn instagram">
+                    <span>Instagram</span>
+                </a>
+                <a href="https://youtube.com/@kilchor_gaming143?si=_aluDK-ZG8NA-4-M" target="_blank" class="social-btn youtube">
+                    <span>YouTube</span>
+                </a>
+            </div>
+            
+            <div class="thank-you">
+                Thanks 👍 for welcome this game
+            </div>
+            
+            <div class="nav-buttons">
+                <button id="back-to-welcome-from-dev-btn">वापस जाएं</button>
+                <button id="play-game-from-dev-btn">खेल खेलें</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page navigation
+        document.getElementById('start-game-btn').addEventListener('click', function() {
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+        });
+
+        document.getElementById('to-developer-btn').addEventListener('click', function() {
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page3').classList.add('active');
+        });
+
+        document.getElementById('back-to-welcome-btn').addEventListener('click', function() {
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page1').classList.add('active');
+        });
+
+        document.getElementById('to-developer-from-game-btn').addEventListener('click', function() {
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page3').classList.add('active');
+        });
+
+        document.getElementById('back-to-welcome-from-dev-btn').addEventListener('click', function() {
+            document.getElementById('page3').classList.remove('active');
+            document.getElementById('page1').classList.add('active');
+        });
+
+        document.getElementById('play-game-from-dev-btn').addEventListener('click', function() {
+            document.getElementById('page3').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+        });
+
+        // गेम वेरिएबल्स
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score-display');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScore = document.getElementById('final-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const soundToggle = document.getElementById('sound-toggle');
+
+        // Custom bird image
+        const birdImage = new Image();
+        birdImage.src = "https://i.ibb.co/dJJp52wv/IMG-20251103-061841-removebg-preview.png";
+        
+        const burntBirdImage = new Image();
+        burntBirdImage.src = "https://i.ibb.co/dJJp52wv/IMG-20251103-061841-removebg-preview.png";
+
+        // Rahul Gandhi pipe images
+        const rahulPipeImages = [
+            "https://i.ibb.co/WNmpdH4H/Gemini-Generated-Image-uh4hfwuh4hfwuh4h.png",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Indian_National_Congress_hand_logo.svg/1200px-Indian_National_Congress_hand_logo.svg.png"
+        ];
+        
+        const currentRahulPipe = new Image();
+        currentRahulPipe.src = rahulPipeImages[0];
+
+        // Sound system
+        let sounds = {
+            enabled: true,
+            audioContext: null,
+            backgroundMusicInterval: null
+        };
+
+        // Animation variables
+        let animationFrame = 0;
+        const particles = [];
+        const skyParticles = [];
+        let birdIsHit = false;
+        let hitAnimationFrame = 0;
+
+        // Audio context initialize करना
+        function initAudioContext() {
+            if (!sounds.audioContext) {
+                sounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (sounds.audioContext.state === 'suspended') {
+                sounds.audioContext.resume();
+            }
+        }
+
+        // Sound effects functions
+        function playJumpSound() {
+            if (!sounds.enabled || !sounds.audioContext) return;
+            
+            const oscillator = sounds.audioContext.createOscillator();
+            const gainNode = sounds.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(sounds.audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523.25, sounds.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(659.25, sounds.audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.3, sounds.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, sounds.audioContext.currentTime + 0.3);
+            
+            oscillator.start(sounds.audioContext.currentTime);
+            oscillator.stop(sounds.audioContext.currentTime + 0.3);
+        }
+
+        function playScoreSound() {
+            if (!sounds.enabled || !sounds.audioContext) return;
+            
+            const oscillator1 = sounds.audioContext.createOscillator();
+            const gain1 = sounds.audioContext.createGain();
+            oscillator1.connect(gain1);
+            gain1.connect(sounds.audioContext.destination);
+            
+            oscillator1.type = 'triangle';
+            oscillator1.frequency.setValueAtTime(659.25, sounds.audioContext.currentTime);
+            gain1.gain.setValueAtTime(0.2, sounds.audioContext.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, sounds.audioContext.currentTime + 0.2);
+            
+            oscillator1.start(sounds.audioContext.currentTime);
+            oscillator1.stop(sounds.audioContext.currentTime + 0.2);
+            
+            const oscillator2 = sounds.audioContext.createOscillator();
+            const gain2 = sounds.audioContext.createGain();
+            oscillator2.connect(gain2);
+            gain2.connect(sounds.audioContext.destination);
+            
+            oscillator2.type = 'triangle';
+            oscillator2.frequency.setValueAtTime(783.99, sounds.audioContext.currentTime + 0.1);
+            gain2.gain.setValueAtTime(0.2, sounds.audioContext.currentTime + 0.1);
+            gain2.gain.exponentialRampToValueAtTime(0.01, sounds.audioContext.currentTime + 0.3);
+            
+            oscillator2.start(sounds.audioContext.currentTime + 0.1);
+            oscillator2.stop(sounds.audioContext.currentTime + 0.3);
+        }
+
+        function playHitSound() {
+            if (!sounds.enabled || !sounds.audioContext) return;
+            
+            const oscillator = sounds.audioContext.createOscillator();
+            const gainNode = sounds.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(sounds.audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            for(let i = 0; i < 8; i++) {
+                oscillator.frequency.setValueAtTime(80 + Math.random() * 100, sounds.audioContext.currentTime + i * 0.1);
+            }
+            
+            gainNode.gain.setValueAtTime(0.3, sounds.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, sounds.audioContext.currentTime + 0.8);
+            
+            oscillator.start(sounds.audioContext.currentTime);
+            oscillator.stop(sounds.audioContext.currentTime + 0.8);
+        }
+
+        function playGameOverSound() {
+            if (!sounds.enabled || !sounds.audioContext) return;
+            
+            const oscillator1 = sounds.audioContext.createOscillator();
+            const gain1 = sounds.audioContext.createGain();
+            oscillator1.connect(gain1);
+            gain1.connect(sounds.audioContext.destination);
+            
+            oscillator1.type = 'sine';
+            oscillator1.frequency.setValueAtTime(180, sounds.audioContext.currentTime);
+            oscillator1.frequency.linearRampToValueAtTime(120, sounds.audioContext.currentTime + 2);
+            
+            gain1.gain.setValueAtTime(0.4, sounds.audioContext.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, sounds.audioContext.currentTime + 2);
+            
+            oscillator1.start(sounds.audioContext.currentTime);
+            oscillator1.stop(sounds.audioContext.currentTime + 2);
+        }
+
+        function startBackgroundMusic() {
+            if (!sounds.enabled || !sounds.audioContext) return;
+            
+            if (sounds.backgroundMusicInterval) {
+                clearInterval(sounds.backgroundMusicInterval);
+            }
+            
+            sounds.backgroundMusicInterval = setInterval(() => {
+                if (!sounds.enabled || !sounds.audioContext || !gameState.isRunning) {
+                    clearInterval(sounds.backgroundMusicInterval);
+                    return;
+                }
+                
+                const oscillator = sounds.audioContext.createOscillator();
+                const gainNode = sounds.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(sounds.audioContext.destination);
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(80 + Math.random() * 40, sounds.audioContext.currentTime);
+                
+                gainNode.gain.setValueAtTime(0.02, sounds.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, sounds.audioContext.currentTime + 1.5);
+                
+                oscillator.start(sounds.audioContext.currentTime);
+                oscillator.stop(sounds.audioContext.currentTime + 1.5);
+            }, 2000);
+        }
+
+        function stopBackgroundMusic() {
+            if (sounds.backgroundMusicInterval) {
+                clearInterval(sounds.backgroundMusicInterval);
+                sounds.backgroundMusicInterval = null;
+            }
+        }
+
+        // Sound test function
+        function testAllSounds() {
+            initAudioContext();
+            playJumpSound();
+            setTimeout(() => playScoreSound(), 500);
+            setTimeout(() => playHitSound(), 1000);
+            setTimeout(() => playGameOverSound(), 2000);
+        }
+
+        // Sound toggle functionality
+        soundToggle.addEventListener('click', function() {
+            sounds.enabled = !sounds.enabled;
+            soundToggle.textContent = sounds.enabled ? '🔊' : '🔇';
+            
+            if (!sounds.enabled) {
+                stopBackgroundMusic();
+            } else if (gameState.isRunning) {
+                startBackgroundMusic();
+            }
+        });
+
+        // गेम स्टेट
+        let gameState = {
+            isRunning: false,
+            score: 0,
+            gravity: 0.3,
+            bird: {
+                x: 60,
+                y: canvas.height / 2,
+                width: 50,
+                height: 45,
+                velocity: 0,
+                jump: -9,
+                isHit: false
+            },
+            pipes: [],
+            pipeWidth: 80,
+            pipeGap: 200,
+            pipeInterval: 2200,
+            lastPipeTime: 0,
+            pipeSpeed: 1.5,
+            ground: {
+                y: canvas.height - 70,
+                height: 70
+            }
+        };
+
+        // Particle system
+        class Particle {
+            constructor(x, y, isTopPipe) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 4 + 2;
+                this.speedY = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.color = `hsl(${Math.random() * 30 + 200}, 100%, 50%)`;
+                this.alpha = 1;
+                this.isTopPipe = isTopPipe;
+            }
+            
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.alpha -= 0.02;
+                return this.alpha > 0;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Sky particle system
+        class SkyParticle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 1 + 0.5;
+                this.color = `hsl(${Math.random() * 20 + 200}, 100%, ${Math.random() * 30 + 50}%)`;
+                this.alpha = Math.random() * 0.5 + 0.3;
+            }
+            
+            update() {
+                this.y -= this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+                return true;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Animation update
+        function updateAnimation() {
+            animationFrame++;
+            
+            // Add new particles to pipes
+            gameState.pipes.forEach(pipe => {
+                if (Math.random() < 0.3) {
+                    particles.push(new Particle(
+                        pipe.x + Math.random() * gameState.pipeWidth,
+                        pipe.topHeight - 5,
+                        true
+                    ));
+                }
+                
+                if (Math.random() < 0.3) {
+                    particles.push(new Particle(
+                        pipe.x + Math.random() * gameState.pipeWidth,
+                        pipe.bottomY + 5,
+                        false
+                    ));
+                }
+            });
+            
+            // Update existing particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                if (!particles[i].update()) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            // Update sky particles
+            if (skyParticles.length < 50) {
+                skyParticles.push(new SkyParticle());
+            }
+            
+            for (let i = skyParticles.length - 1; i >= 0; i--) {
+                skyParticles[i].update();
+            }
+        }
+
+        // Draw Rahul Gandhi pipe
+        function drawRahulPipe(x, topHeight, bottomY, pipeWidth) {
+            // Top pipe (flipped vertically)
+            ctx.save();
+            ctx.translate(x + pipeWidth/2, topHeight/2);
+            ctx.scale(1, -1);
+            ctx.drawImage(currentRahulPipe, -pipeWidth/2, -topHeight/2, pipeWidth, topHeight);
+            ctx.restore();
+            
+            // Bottom pipe
+            ctx.drawImage(currentRahulPipe, x, bottomY, pipeWidth, canvas.height - bottomY - gameState.ground.height);
+            
+            // Add tricolor effect to pipes
+            const tricolorGradient = ctx.createLinearGradient(x, 0, x + pipeWidth, 0);
+            tricolorGradient.addColorStop(0, 'rgba(255, 153, 51, 0.3)'); // Saffron
+            tricolorGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)'); // White
+            tricolorGradient.addColorStop(1, 'rgba(19, 136, 8, 0.3)'); // Green
+            
+            ctx.fillStyle = tricolorGradient;
+            ctx.fillRect(x, topHeight - 10, pipeWidth, 10);
+            ctx.fillRect(x, bottomY, pipeWidth, 10);
+            
+            // Animated effect
+            ctx.fillStyle = `rgba(255, 215, 0, ${0.3 + Math.sin(animationFrame * 0.1) * 0.2})`;
+            ctx.fillRect(x + 2, topHeight - 8, pipeWidth - 4, 6);
+            ctx.fillRect(x + 2, bottomY + 2, pipeWidth - 4, 6);
+        }
+
+        // Draw custom bird image
+        function drawCustomBird(x, y, width, height) {
+            if (gameState.bird.isHit) {
+                // Draw hit bird image
+                ctx.save();
+                ctx.filter = 'grayscale(1) brightness(0.3)';
+                ctx.drawImage(burntBirdImage, x, y, width, height);
+                ctx.restore();
+                
+                // Add effect when hit
+                if (birdIsHit) {
+                    for(let i = 0; i < 3; i++) {
+                        const effectX = x + width/2 + (Math.random() - 0.5) * 20;
+                        const effectY = y - Math.random() * 10;
+                        const size = Math.random() * 4 + 2;
+                        
+                        ctx.fillStyle = `rgba(255, 0, 0, ${0.7 - hitAnimationFrame * 0.1})`;
+                        ctx.beginPath();
+                        ctx.arc(effectX, effectY, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    hitAnimationFrame++;
+                }
+            } else {
+                // Draw normal bird image
+                ctx.drawImage(birdImage, x, y, width, height);
+            }
+        }
+
+        // Audio context initialize करें
+        initAudioContext();
+
+        // गेम शुरू करें
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // कीबोर्ड कंट्रोल
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && gameState.isRunning) {
+                jump();
+            } else if (event.code === 'Space' && !gameState.isRunning && startScreen.style.display !== 'none') {
+                startGame();
+            }
+        });
+
+        // माउस/टच कंट्रोल
+        canvas.addEventListener('click', function() {
+            if (gameState.isRunning) {
+                jump();
+            }
+        });
+
+        // कूदने का फंक्शन
+        function jump() {
+            gameState.bird.velocity = gameState.bird.jump;
+            playJumpSound();
+        }
+
+        // गेम शुरू करने का फंक्शन
+        function startGame() {
+            if (sounds.audioContext && sounds.audioContext.state === 'suspended') {
+                sounds.audioContext.resume();
+            }
+            
+            gameState.isRunning = true;
+            gameState.score = 0;
+            gameState.bird.y = canvas.height / 2;
+            gameState.bird.velocity = 0;
+            gameState.bird.isHit = false;
+            gameState.pipes = [];
+            gameState.lastPipeTime = 0;
+            particles.length = 0;
+            skyParticles.length = 0;
+            animationFrame = 0;
+            birdIsHit = false;
+            hitAnimationFrame = 0;
+            
+            scoreDisplay.textContent = '0';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            
+            if (sounds.enabled) {
+                startBackgroundMusic();
+            }
+            
+            gameLoop();
+        }
+
+        // गेम लूप
+        function gameLoop() {
+            if (!gameState.isRunning) return;
+            
+            update();
+            draw();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // गेम अपडेट करें
+        function update() {
+            gameState.bird.velocity += gameState.gravity;
+            gameState.bird.y += gameState.bird.velocity;
+            
+            if (gameState.bird.y + gameState.bird.height > gameState.ground.y) {
+                gameState.bird.y = gameState.ground.y - gameState.bird.height;
+                gameState.bird.velocity = 0;
+            }
+            
+            if (gameState.bird.y < 0) {
+                gameState.bird.y = 0;
+                gameState.bird.velocity = 0;
+            }
+            
+            const currentTime = Date.now();
+            if (currentTime - gameState.lastPipeTime > gameState.pipeInterval) {
+                generatePipe();
+                gameState.lastPipeTime = currentTime;
+            }
+            
+            for (let i = 0; i < gameState.pipes.length; i++) {
+                const pipe = gameState.pipes[i];
+                pipe.x -= gameState.pipeSpeed;
+                
+                if (!pipe.passed && pipe.x + gameState.pipeWidth < gameState.bird.x) {
+                    gameState.score++;
+                    scoreDisplay.textContent = gameState.score;
+                    pipe.passed = true;
+                    playScoreSound();
+                }
+                
+                if (checkCollision(gameState.bird, pipe)) {
+                    birdIsHit = true;
+                    gameState.bird.isHit = true;
+                    playHitSound();
+                    setTimeout(() => {
+                        playGameOverSound();
+                    }, 500);
+                    setTimeout(() => {
+                        gameOver();
+                    }, 1500);
+                    return;
+                }
+            }
+            
+            gameState.pipes = gameState.pipes.filter(pipe => pipe.x + gameState.pipeWidth > 0);
+            updateAnimation();
+        }
+
+        // नया पाइप जनरेट करें
+        function generatePipe() {
+            const minHeight = 60;
+            const maxHeight = canvas.height - gameState.ground.height - gameState.pipeGap - minHeight;
+            const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+            
+            gameState.pipes.push({
+                x: canvas.width,
+                topHeight: topHeight,
+                bottomY: topHeight + gameState.pipeGap,
+                passed: false
+            });
+        }
+
+        // टक्कर की जांच करें
+        function checkCollision(bird, pipe) {
+            const tolerance = 5;
+            
+            if (bird.x + tolerance < pipe.x + gameState.pipeWidth - tolerance &&
+                bird.x + bird.width - tolerance > pipe.x + tolerance &&
+                bird.y + tolerance < pipe.topHeight - tolerance) {
+                return true;
+            }
+            
+            if (bird.x + tolerance < pipe.x + gameState.pipeWidth - tolerance &&
+                bird.x + bird.width - tolerance > pipe.x + tolerance &&
+                bird.y + bird.height - tolerance > pipe.bottomY + tolerance) {
+                return true;
+            }
+            
+            return false;
+        }
+
+        // गेम ओवर
+        function gameOver() {
+            gameState.isRunning = false;
+            finalScore.textContent = `आपका स्कोर: ${gameState.score}`;
+            stopBackgroundMusic();
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // गेम ड्रा करें
+        function draw() {
+            // Indian flag inspired background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#4ECDC4');
+            gradient.addColorStop(0.33, '#556270');
+            gradient.addColorStop(0.66, '#C06C84');
+            gradient.addColorStop(1, '#FF6B6B');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Sky particles
+            skyParticles.forEach(particle => particle.draw());
+            
+            // Clouds
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(80, 60, 25, 0, Math.PI * 2);
+            ctx.arc(110, 60, 30, 0, Math.PI * 2);
+            ctx.arc(140, 60, 20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(220, 120, 30, 0, Math.PI * 2);
+            ctx.arc(250, 120, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Rahul Gandhi Pipes
+            for (const pipe of gameState.pipes) {
+                drawRahulPipe(pipe.x, pipe.topHeight, pipe.bottomY, gameState.pipeWidth);
+            }
+            
+            // Particles
+            particles.forEach(particle => particle.draw());
+            
+            // Indian ground
+            ctx.fillStyle = '#FF9933';
+            ctx.fillRect(0, gameState.ground.y, canvas.width, gameState.ground.height/3);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, gameState.ground.y + gameState.ground.height/3, canvas.width, gameState.ground.height/3);
+            ctx.fillStyle = '#138808';
+            ctx.fillRect(0, gameState.ground.y + 2*gameState.ground.height/3, canvas.width, gameState.ground.height/3);
+            
+            // Ground pattern
+            ctx.fillStyle = '#FFD700';
+            for(let i = 0; i < canvas.width; i += 20) {
+                const height = 5 + Math.sin(animationFrame * 0.1 + i * 0.1) * 3;
+                ctx.fillRect(i, gameState.ground.y + 15, 15, height);
+            }
+            
+            // Custom Bird Image ड्रा करें
+            drawCustomBird(gameState.bird.x, gameState.bird.y, gameState.bird.width, gameState.bird.height);
+        }
+
+        // पहली बार बैकग्राउंड ड्रा करें
+        draw();
+    </script>
+</body>
+</html>
